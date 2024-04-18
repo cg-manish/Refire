@@ -16,7 +16,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Listeing in port 8080")
+	fmt.Println("Listening in port 8080")
 
 	connection, err := ln.Accept()
 	if err != nil {
