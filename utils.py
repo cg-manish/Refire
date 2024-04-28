@@ -1,30 +1,44 @@
 from ip2geotools.databases.noncommercial import DbIpCity
 import ipaddress
 import json
-blocked_country_list=["IR", "KP", "SY", "SD", "CU", "RU", "CN"]
-
-allowed_countries= ["US"]
-
-allowed_ciites=["NY", "ATL"]
+from consts import *
 
 AWS_CIDR_LIST=[]
 
 
-BLOCK_RULES={
-    "BLOCK_AWS":True, 
-    "BLOCK_AZURE":True,
-    "BLOCK_GOOGLE":True,
-    "BLOCK_DEFAULT_COUNTRY":True,
-    "BLOCK_DEFAULT_CITY":False,
+
+
+
+""" Rule data structure
+
+{
+        "rule_name":name of the rule",
+        "protocol":"TCP or UDP",
+        "from_port":80,// the port on which request arrives
+        "cidr_blocks":"", // cidr block or IP address
+        "ipv6_cidr_blocks":"", 
 }
 
 
+"""
 
-def get_country_from_ip(ip):
+ingress_rule=[
+    {   "rule_name":"",
+        "protocol":"TCP",
+        "from_port":80,
+        "ip_address": "191.23.24.3",
+        "cidr_blocks":"",
+        "ipv6_cidr_blocks":"",
+    }
+]
+
+
+
+
+def get_location_from_ip(ip):
     try:
         response = DbIpCity.get(ip, api_key='free')
-        country = response.country
-        return country
+        return response
     except Exception as e:
         print("Error:", e)
         return None
@@ -57,6 +71,8 @@ def check_azure_ip(ip):
 
 def check_google_ip(ip):
     return None
+
+
 
 def construct_http_response(status_code, status_text, body):
     response = f"HTTP/1.1 {status_code} {status_text}\r\n"

@@ -1,0 +1,15 @@
+BLOCKED_COUNTRY_LIST=["IR", "KP", "SY", "SD", "CU", "RU", "CN"]
+BLOCKED_STATE_LIST=["NY", "CA", "TX", "FL"]
+
+BLOCKED_CITY_LIST=["NY", "LA", "SF", "ATL"]
+
+ALLOWED_COUNTRIES= ["US"]
+
+
+BLOCK_RULES={
+    "BLOCK_AWS":True, 
+    "BLOCK_AZURE":True,
+    "BLOCK_GOOGLE":True,
+    "BLOCK_DEFAULT_COUNTRY":True,
+    "BLOCK_DEFAULT_CITY":False,
+}
