@@ -4,8 +4,7 @@ import threading
 from utils import *
 from consts import *
 import argparse
-
-from  malware_ip_crawl import *
+from ip_crawls import *
 
 
 def reject_request(client_socket):
@@ -46,11 +45,18 @@ def handle_client(client_socket, client_address, forward_port):
         reject_request(client_socket)
 
 
+
     if BLOCK_RULES["BLOCK_AWS"]:
         is_aws_ip= check_aws_ip(ip)
         if is_aws_ip:
             print(f"[INFO] Blocking request from AWS IP: {ip}")
             reject_request(client_socket)
+
+
+    if BLOCK_RULES["BLOCK_CLOUDFLARE"]:
+       if ip in CLOUDFLARE_IP_LIST:
+              print(f"[INFO] Blocking request from Cloudflare IP: {ip}")
+              reject_request(client_socket)
 
 
     #### if all rejection rules are passed, forward the request to localhost:8080 or specific port
@@ -135,5 +141,9 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+
+    get_latest_vpn_ips()
+    update_botnet_ips()
+    get_latest_cloudflare_ips()
 
     start_proxy(port=args.port, forward_port=args.forward)

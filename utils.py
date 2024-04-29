@@ -5,36 +5,6 @@ from consts import *
 
 AWS_CIDR_LIST=[]
 
-
-
-
-
-""" Rule data structure
-
-{
-        "rule_name":name of the rule",
-        "protocol":"TCP or UDP",
-        "from_port":80,// the port on which request arrives
-        "cidr_blocks":"", // cidr block or IP address
-        "ipv6_cidr_blocks":"", 
-}
-
-
-"""
-
-ingress_rule=[
-    {   "rule_name":"",
-        "protocol":"TCP",
-        "from_port":80,
-        "ip_address": "191.23.24.3",
-        "cidr_blocks":"",
-        "ipv6_cidr_blocks":"",
-    }
-]
-
-
-
-
 def get_location_from_ip(ip):
     try:
         response = DbIpCity.get(ip, api_key='free')
