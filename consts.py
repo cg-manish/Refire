@@ -1,7 +1,8 @@
-BLOCKED_COUNTRY_LIST=["IR", "KP", "SY", "SD", "CU", "RU", "CN"]
-BLOCKED_STATE_LIST=["NY", "CA", "TX", "FL"]
+BLOCKED_COUNTRY_LIST=["Iran", "Canada"]
 
-BLOCKED_CITY_LIST=["NY", "LA", "SF", "ATL"]
+BLOCKED_STATE_LIST=["georgia", "new york", "alaska"]
+
+BLOCKED_CITY_LIST=["new york", "los angeles", "san francisco", "atlanta"]
 
 ALLOWED_COUNTRIES= ["US"]
 

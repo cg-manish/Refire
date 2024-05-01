@@ -71,17 +71,18 @@ def handle_client(client_socket, client_address, forward_port):
 
 def geo_location_allowed(ip):
     location=get_location_from_ip(ip)
+    print(location)
     country=location.country
     state=location.region
     city=location.city
 
-    if country in BLOCKED_COUNTRY_LIST:
+    if country.lower() in BLOCKED_COUNTRY_LIST:
         print(f"[INFO] Blocking request from {ip} whose country is: {country}")
         return False
-    elif state in BLOCKED_STATE_LIST:
+    elif state.lower() in BLOCKED_STATE_LIST:
         print(f"[INFO] Blocking request from {ip} whose state is: {state}")
         return False
-    elif city in BLOCKED_CITY_LIST:
+    elif city.lower() in BLOCKED_CITY_LIST:
         print(f"[INFO] Blocking request from {ip} whose city is: {city}")
         return False
 

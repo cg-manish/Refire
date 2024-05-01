@@ -51,3 +51,5 @@ def construct_http_response(status_code, status_text, body):
     response += "\r\n"
     response += body
     return response
+
+print("lol")
