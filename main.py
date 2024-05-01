@@ -2,7 +2,9 @@
 import socket
 import threading
 from utils import *
+from consts import *
 import argparse
+from ip_crawls import *
 
 
 def reject_request(client_socket):
@@ -23,41 +25,67 @@ def reject_request(client_socket):
     client_socket.close()
 
     
-def handle_client(client_socket, client_address):
+def handle_client(client_socket, client_address, forward_port):
     request = client_socket.recv(4096)
+
+    #  clinet addressed is a typle of (ip, port)
+    ip=client_address[0]
     print("[INFO] Accepted connection from:", client_address)
     print(f"[INFO] Client address: {client_address}")
     print("[INFO] Received request from client:", request)
 
-    # country_allowed(client_address[0])
-    # reject_request(client_socket)
-
-    if not country_allowed:
+    
+    
+    if not geo_location_allowed(ip):
       reject_request(client_socket)
 
-    if BLOCK_RULES["BLOCK_AWS"]:
-        is_aws_ip= check_aws_ip(client_address[0])
-
-    if is_aws_ip:
-        print(f"[INFO] Blocking request from AWS IP: {client_address[0]}")
+    # check if the client ip is in malware list
+    if ip in LATEST_MALWARE_IPS:
+        print(f"[INFO] Blocking request from malware IP: {ip}")
         reject_request(client_socket)
 
 
-    response= forward_request(request, 8080)
 
+    if BLOCK_RULES["BLOCK_AWS"]:
+        is_aws_ip= check_aws_ip(ip)
+        if is_aws_ip:
+            print(f"[INFO] Blocking request from AWS IP: {ip}")
+            reject_request(client_socket)
+
+
+    if BLOCK_RULES["BLOCK_CLOUDFLARE"]:
+       if ip in CLOUDFLARE_IP_LIST:
+              print(f"[INFO] Blocking request from Cloudflare IP: {ip}")
+              reject_request(client_socket)
+
+
+    #### if all rejection rules are passed, forward the request to localhost:8080 or specific port
+    response= forward_request(request, forward_port)
+
+    ### if response is received from the forwared request, send it back to the client
     if(response):
         print("[RESPONSE] Received response from localhost:8080:", response)
         client_socket.sendall(response)
         client_socket.close()
 
-def country_allowed(ip):
-    country= get_country_from_ip(ip)
 
-    if country in blocked_country_list:
+def geo_location_allowed(ip):
+    location=get_location_from_ip(ip)
+    country=location.country
+    state=location.region
+    city=location.city
+
+    if country in BLOCKED_COUNTRY_LIST:
         print(f"[INFO] Blocking request from {ip} whose country is: {country}")
         return False
-    return True
+    elif state in BLOCKED_STATE_LIST:
+        print(f"[INFO] Blocking request from {ip} whose state is: {state}")
+        return False
+    elif city in BLOCKED_CITY_LIST:
+        print(f"[INFO] Blocking request from {ip} whose city is: {city}")
+        return False
 
+    return True
 
 def forward_request(request, port):
     
@@ -81,7 +109,7 @@ def forward_request(request, port):
         return None
 
 
-def start_proxy(port):
+def start_proxy(port, forward_port=8080):
     # Create a socket object, AF_INET for IPv4, SOCK_STREAM for TCP
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
@@ -99,17 +127,23 @@ def start_proxy(port):
         print("\n [INFO] Accepted connection from:", client_address)
         
         # Start a new thread to handle the client request
-        client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
+        client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address, forward_port))
         client_thread.start()
         # handle_client(client_socket, client_address)
 
 def parse_args():
     parser = argparse.ArgumentParser(description="My Python Script")
+
     parser.add_argument("-p", "--port", type=int, default=80, help="Port number")
+    parser.add_argument("-f", "--forward", type=int, default=8080, help="Forward port number")
     args = parser.parse_args()
     return args
 
 if __name__ == "__main__":
     args = parse_args()
 
-    start_proxy(port=args.port)
+    get_latest_vpn_ips()
+    update_botnet_ips()
+    get_latest_cloudflare_ips()
+
+    start_proxy(port=args.port, forward_port=args.forward)

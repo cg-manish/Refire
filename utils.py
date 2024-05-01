@@ -1,30 +1,14 @@
 from ip2geotools.databases.noncommercial import DbIpCity
 import ipaddress
 import json
-blocked_country_list=["IR", "KP", "SY", "SD", "CU", "RU", "CN"]
-
-allowed_countries= ["US"]
-
-allowed_ciites=["NY", "ATL"]
+from consts import *
 
 AWS_CIDR_LIST=[]
 
-
-BLOCK_RULES={
-    "BLOCK_AWS":True, 
-    "BLOCK_AZURE":True,
-    "BLOCK_GOOGLE":True,
-    "BLOCK_DEFAULT_COUNTRY":True,
-    "BLOCK_DEFAULT_CITY":False,
-}
-
-
-
-def get_country_from_ip(ip):
+def get_location_from_ip(ip):
     try:
         response = DbIpCity.get(ip, api_key='free')
-        country = response.country
-        return country
+        return response
     except Exception as e:
         print("Error:", e)
         return None
@@ -57,6 +41,8 @@ def check_azure_ip(ip):
 
 def check_google_ip(ip):
     return None
+
+
 
 def construct_http_response(status_code, status_text, body):
     response = f"HTTP/1.1 {status_code} {status_text}\r\n"
