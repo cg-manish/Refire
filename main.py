@@ -8,8 +8,6 @@ from ip_crawls import *
 
 
 def reject_request(client_socket):
-
-
     body=json.dumps({"error": "Forbidden", 
                      "message": "You are not allowed to access this resource",
                      "statusCode": 403})
@@ -25,49 +23,6 @@ def reject_request(client_socket):
     client_socket.close()
 
     
-def handle_client(client_socket, client_address, forward_port):
-    request = client_socket.recv(4096)
-
-    #  clinet addressed is a typle of (ip, port)
-    ip=client_address[0]
-    print("[INFO] Accepted connection from:", client_address)
-    print(f"[INFO] Client address: {client_address}")
-    print("[INFO] Received request from client:", request)
-
-    
-    
-    if not geo_location_allowed(ip):
-      reject_request(client_socket)
-
-    # check if the client ip is in malware list
-    if ip in LATEST_MALWARE_IPS:
-        print(f"[INFO] Blocking request from malware IP: {ip}")
-        reject_request(client_socket)
-
-
-
-    if BLOCK_RULES["BLOCK_AWS"]:
-        is_aws_ip= check_aws_ip(ip)
-        if is_aws_ip:
-            print(f"[INFO] Blocking request from AWS IP: {ip}")
-            reject_request(client_socket)
-
-
-    if BLOCK_RULES["BLOCK_CLOUDFLARE"]:
-       if ip in CLOUDFLARE_IP_LIST:
-              print(f"[INFO] Blocking request from Cloudflare IP: {ip}")
-              reject_request(client_socket)
-
-
-    #### if all rejection rules are passed, forward the request to localhost:8080 or specific port
-    response= forward_request(request, forward_port)
-
-    ### if response is received from the forwared request, send it back to the client
-    if(response):
-        print("[RESPONSE] Received response from localhost:8080:", response)
-        client_socket.sendall(response)
-        client_socket.close()
-
 
 def geo_location_allowed(ip):
     location=get_location_from_ip(ip)
@@ -96,7 +51,7 @@ def forward_request(request, port):
 
         destination_socket.sendall(request)
         # Receive the response from localhost:8080
-        response = destination_socket.recv(4096)
+        response = destination_socket.recv(8192)
 
         # print("[RESPONSE] Received response from localhost:8080:", response)
         # Close the socket to localhost:8080
@@ -108,6 +63,47 @@ def forward_request(request, port):
 
         print("[ERROR]  `Error while forwarding request:", e)
         return None
+
+def handle_client(client_socket, client_address, forward_port):
+    request = client_socket.recv(8192)
+
+    #  clinet addressed is a typle of (ip, port)
+    ip=client_address[0]
+    print("[INFO] Accepted connection from:", client_address)
+    print(f"[INFO] Client address: {client_address}")
+    print("[INFO] Received request from client:", request)
+
+    if not geo_location_allowed(ip):
+        reject_request(client_socket)
+
+    # check if the client ip is in malware list
+    if ip in LATEST_MALWARE_IPS:
+        print(f"[INFO] Blocking request from malware IP: {ip}")
+        reject_request(client_socket)
+
+
+
+    if BLOCK_RULES["BLOCK_AWS"]:
+        is_aws_ip= check_aws_ip(ip)
+        if is_aws_ip:
+            print(f"[INFO] Blocking request from AWS IP: {ip}")
+            reject_request(client_socket)
+
+
+    if BLOCK_RULES["BLOCK_CLOUDFLARE"]:
+       if ip in CLOUDFLARE_IP_LIST:
+              print(f"[INFO] Blocking request from Cloudflare IP: {ip}")
+              reject_request(client_socket)
+
+
+    #### if all rejection rules are passed, forward the request to localhost:8080 or specific port
+    response= forward_request(request, forward_port)
+
+    ### if response is received from the forwared request, send it back to the client
+    if(response):
+        print("\n\n [RESPONSE] Received response from localhost:8080:", response)
+        client_socket.sendall(response)
+        client_socket.close()
 
 
 def start_proxy(port, forward_port=8080):
