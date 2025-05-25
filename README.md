@@ -3,10 +3,10 @@
 ReFire is a basic firewall to block http requests from AWS, Azure and GCP ip addresses. This focuses on blocking requests.
 
 Features planned:
-- Block requets on specific ports and protocols
-- Block ip address ranges of countries
-- Block requests from US states or cities
-- Block files based on MIME types
+- [x] Block requets on specific ports and protocols 
+- [x] Block ip address ranges of countries 
+- [x] Block requests from specific US states or cities 
+- [] Block files based on MIME types
 
 Might be reimplemented in GO or Rust
 
