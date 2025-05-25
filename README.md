@@ -8,7 +8,6 @@ Features planned:
 - [x] Block requests from specific US states or cities 
 - [] Block files based on MIME types
 
-Might be reimplemented in GO or Rust
 
 ### Running the program
 
